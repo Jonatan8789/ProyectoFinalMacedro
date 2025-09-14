@@ -4,7 +4,7 @@ const precios = [3500, 1500, 9500, 7000, 2000];
 
 let carrito = [];
 
-// Función: Mostrar productos en consola
+// Mostrar productos en consola
 function mostrarProductos() {
   console.log("Productos disponibles:");
   for (let i = 0; i < productos.length; i++) {
@@ -12,7 +12,7 @@ function mostrarProductos() {
   }
 }
 
-// Función: Elegir producto
+//Elegir producto
 function seleccionarProducto() {
   let mensaje = "¿Qué producto querés comprar?\n";
   for (let i = 0; i < productos.length; i++) {
@@ -34,7 +34,7 @@ function seleccionarProducto() {
   }
 }
 
-// Función: Mostrar resumen del carrito
+// Resumen del carrito
 function mostrarCarrito() {
   if (carrito.length === 0) {
     alert("No agregaste productos al carrito.");

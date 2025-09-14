@@ -19,8 +19,8 @@ class CartItem {
 
 
 const STORAGE_KEY = "simulator_cart_v1";
-let products = []; // array of Product
-let cart = [];     // array of CartItem
+let products = []; // array de Productos
+let cart = [];     // array de carrito
 
 
 function formatMoney(n){
