@@ -1,0 +1,26 @@
+[
+  {
+    "id": "p1",
+    "name": "Camiseta Oficial",
+    "price": 2499.0,
+    "description": "Camiseta del club"
+  },
+  {
+    "id": "p2",
+    "name": "Bufanda Oficial",
+    "price": 799.0,
+    "description": "Bufanda tejido oficial"
+  },
+  {
+    "id": "p3",
+    "name": "Entrada General",
+    "price": 1500.0,
+    "description": "Entrada simulada para partido"
+  },
+  {
+    "id": "p4",
+    "name": "Poster",
+    "price": 499.0,
+    "description": "Poster con jugadores"
+  }
+]

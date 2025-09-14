@@ -1,17 +1,68 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Simulador de compra - Tienda Matera</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Simulador - Carrito de Compras</title>
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
-  <h1>Simulador de Compra - Tienda Matera</h1>
-  <p>
-    Este simulador permite al usuario seleccionar productos típicos de una tienda matera 
-    (mates, bombillas, termos y bolsos materos). A través de cuadros de diálogo y mensajes 
-    en la consola, el usuario puede elegir productos, confirmar la compra y obtener el resumen con el total.
-  </p>
+  <header class="site-header">
+    <h1>Simulador Carrito de Compras</h1>
+  </header>
 
-  <script src="js/main.js"></script>
+  <main class="container">
+    <section class="catalog">
+      <h2>Catálogo de Productos</h2>
+      <div id="product-list" class="grid"></div>
+    </section>
+
+    <aside class="cart">
+      <h2>Carrito</h2>
+      <form id="add-product-form" class="hidden">
+        <!-- Hidden form used by demo to show adding custom product -->
+        <label>Nombre <input id="custom-name" /></label>
+        <label>Precio <input id="custom-price" type="number" step="0.01" /></label>
+        <button id="btn-add-custom" type="button">Agregar</button>
+      </form>
+
+      <div id="cart-list"></div>
+      <div class="cart-summary">
+        <p>Items: <span id="cart-count">0</span></p>
+        <p>Total: $<span id="cart-total">0.00</span></p>
+        <button id="btn-clear">Vaciar carrito</button>
+        <button id="btn-checkout">Simular compra</button>
+      </div>
+    </aside>
+  </main>
+
+  <template id="product-template">
+    <article class="card">
+      <h3 class="p-name"></h3>
+      <p class="p-desc"></p>
+      <p class="p-price"></p>
+      <div class="controls">
+        <label>Cantidad
+          <input class="p-qty" type="number" value="1" min="1" />
+        </label>
+        <button class="btn-add">Agregar al carrito</button>
+      </div>
+    </article>
+  </template>
+
+  <template id="cart-item-template">
+    <div class="cart-item">
+      <div class="ci-left">
+        <strong class="ci-name"></strong>
+        <small class="ci-price"></small>
+      </div>
+      <div class="ci-right">
+        <input class="ci-qty" type="number" min="1" />
+        <button class="ci-remove">Eliminar</button>
+      </div>
+    </div>
+  </template>
+
+  <script src="js/app.js" defer></script>
 </body>
 </html>
