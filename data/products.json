@@ -1,26 +1,42 @@
 [
   {
-    "id": "p1",
-    "name": "Camiseta Oficial",
-    "price": 2499.0,
-    "description": "Camiseta del club"
+    "id": 1,
+    "title": "Auriculares Bluetooth X1",
+    "price": 9500,
+    "stock": 10,
+    "image": "https://img.freepik.com/foto-gratis/muestra-auriculares-musica-levitacion_23-2149817602.jpg?t=st=1759863102~exp=1759866702~hmac=61cc959b1ec978002dcdf7ba44bf01f8fc864d6433f60dd6f83bd6f66d2c87f6&w=1480",
+    "description": "Auriculares inalámbricos con buena autonomía."
   },
   {
-    "id": "p2",
-    "name": "Bufanda Oficial",
-    "price": 799.0,
-    "description": "Bufanda tejido oficial"
+    "id": 2,
+    "title": "Mouse Gamer Pro",
+    "price": 12000,
+    "stock": 6,
+    "image": "https://img.freepik.com/psd-gratis/icono-raton-inalambrico-juegos-computadora-ilustracion-procesamiento-3d-aislado_439185-12646.jpg?t=st=1759863189~exp=1759866789~hmac=874f734dcd0f863d8439e20c67085d21eb6de5f41b9f905eb875b68700d801e7&w=1480",
+    "description": "Sensor preciso y botones programables."
   },
   {
-    "id": "p3",
-    "name": "Entrada General",
-    "price": 1500.0,
-    "description": "Entrada simulada para partido"
+    "id": 3,
+    "title": "Teclado Mecánico TKL",
+    "price": 18500,
+    "stock": 4,
+    "image": "https://img.freepik.com/foto-gratis/espacio-fiesta-esta-listo-celebracion-linea_23-2149347242.jpg?t=st=1759863249~exp=1759866849~hmac=b6165cd6392be548c5d67a6eed867af49eae2f93396e348e494714e2cac57650&w=1480",
+    "description": "Switches táctiles y retroiluminación."
   },
   {
-    "id": "p4",
-    "name": "Poster",
-    "price": 499.0,
-    "description": "Poster con jugadores"
+    "id": 4,
+    "title": "Mochila Urbana 20L",
+    "price": 7200,
+    "stock": 15,
+    "image": "https://img.freepik.com/foto-gratis/retrato-femenino-mochila_23-2148579670.jpg?t=st=1759863278~exp=1759866878~hmac=9b53a8a58b5c29ff0ad9860e5be7cdf01d438fa1ed6f492adf5671503a7362a2&w=1480",
+    "description": "Compartimentos para laptop y accesorios."
+  },
+  {
+    "id": 5,
+    "title": "Cargador USB-C",
+    "price": 5800,
+    "stock": 8,
+    "image": "https://img.freepik.com/foto-gratis/cargador-cable-usb-tipo-c-sobre-fondo-blanco-aislado_58702-4501.jpg?t=st=1759863307~exp=1759866907~hmac=a2f12710b111954da585451cb5ec039595adaac057fbd36a9f250cf4dd107a96&w=1480",
+    "description": "Carga rápida y compacta."
   }
 ]

@@ -1,189 +1,281 @@
 
-// --- Modelo de datos -----------------------------------------------------
-class Product {
-  constructor(id, name, price, description = '') {
-    this.id = id;
-    this.name = name;
-    this.price = Number(price);
-    this.description = description;
+/*
+  app.js - Ecommerce simulador (Proyecto Final Macedro)
+  - Carga products.json (simulado remoto)
+  - Renderiza productos, carrito, checkout
+  - Usa SweetAlert2 en lugar de alert/confirm/prompt
+  - Guarda pedidos en localStorage (simulación de backend)
+*/
+
+// Variables de estado
+const state = {
+  products: [],
+  cart: [], // {id, qty}
+};
+
+// Helpers (clear, named, reusable)
+function formatPrice(value) {
+  return '$' + Number(value).toLocaleString('es-AR');
+}
+
+function findProduct(id) {
+  return state.products.find(p => p.id === Number(id));
+}
+
+function saveOrdersToLocalStorage(orders) {
+  localStorage.setItem('sim_orders', JSON.stringify(orders || []));
+}
+
+function loadOrdersFromLocalStorage() {
+  try {
+    const raw = localStorage.getItem('sim_orders');
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
   }
 }
 
-class CartItem {
-  constructor(product, qty=1) {
-    this.product = product;
-    this.qty = Number(qty);
-  }
-  subtotal(){ return this.product.price * this.qty }
-}
-
-
-const STORAGE_KEY = "simulator_cart_v1";
-let products = []; // array de Productos
-let cart = [];     // array de carrito
-
-
-function formatMoney(n){
-  return Number(n).toFixed(2);
-}
-
-function saveCart(){
-  const serial = cart.map(ci => ({id:ci.product.id, qty:ci.qty}));
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(serial));
-}
-
-function loadCart(){
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if(!raw) return;
-  try{
-    const arr = JSON.parse(raw);
-    cart = arr.map(a=>{
-      const p = products.find(x=>x.id===a.id);
-      if(p) return new CartItem(p, a.qty);
-      return null;
-    }).filter(Boolean);
-  }catch(e){
-    cart = [];
+// Fetch products (simulate remote JSON)
+async function loadProducts() {
+  try {
+    const res = await fetch('../data/products.json');
+    if (!res.ok) throw new Error('No se pudo cargar products.json');
+    const data = await res.json();
+    state.products = data;
+    renderProducts();
+  } catch (err) {
+    document.getElementById('products-empty').classList.remove('hidden');
   }
 }
 
-
-const tplProduct = document.getElementById('product-template');
-const tplCartItem = document.getElementById('cart-item-template');
-
-function renderProducts(){
-  const container = document.getElementById('product-list');
+// Render products into the DOM
+function renderProducts() {
+  const container = document.getElementById('products');
   container.innerHTML = '';
-  products.forEach(p=>{
-    const node = tplProduct.content.cloneNode(true);
-    node.querySelector('.p-name').textContent = p.name;
-    node.querySelector('.p-desc').textContent = p.description;
-    node.querySelector('.p-price').textContent = '$' + formatMoney(p.price);
-    const qtyInput = node.querySelector('.p-qty');
-    qtyInput.value = 1;
-    node.querySelector('.btn-add').addEventListener('click', ()=>{
-      const qty = Number(qtyInput.value) || 1;
-      addToCart(p.id, qty);
-    });
-    container.appendChild(node);
-  });
-}
-
-function renderCart(){
-  const list = document.getElementById('cart-list');
-  list.innerHTML = '';
-  cart.forEach(ci=>{
-    const node = tplCartItem.content.cloneNode(true);
-    node.querySelector('.ci-name').textContent = ci.product.name;
-    node.querySelector('.ci-price').textContent = '$' + formatMoney(ci.product.price) + ' c/u';
-    const qtyInput = node.querySelector('.ci-qty');
-    qtyInput.value = ci.qty;
-    qtyInput.addEventListener('change', (e)=>{
-      const v = Number(e.target.value);
-      if(v <= 0){ removeFromCart(ci.product.id); return; }
-      updateQty(ci.product.id, v);
-    });
-    node.querySelector('.ci-remove').addEventListener('click', ()=> removeFromCart(ci.product.id));
-    list.appendChild(node);
-  });
-
-
-  const count = cart.reduce((s,i)=>s + i.qty,0);
-  const total = cart.reduce((s,i)=>s + i.subtotal(),0);
-  document.getElementById('cart-count').textContent = count;
-  document.getElementById('cart-total').textContent = formatMoney(total);
-}
-
-
-function addToCart(productId, qty=1){
-  const product = products.find(p=>p.id===productId);
-  if(!product) return;
-  const existing = cart.find(c=>c.product.id===productId);
-  if(existing){
-    existing.qty += Number(qty);
-  } else {
-    cart.push(new CartItem(product, qty));
-  }
-  saveCart();
-  renderCart();
-}
-
-function removeFromCart(productId){
-  cart = cart.filter(c=>c.product.id !== productId);
-  saveCart();
-  renderCart();
-}
-
-function updateQty(productId, qty){
-  const it = cart.find(c=>c.product.id===productId);
-  if(!it) return;
-  it.qty = Number(qty);
-  if(it.qty <= 0) removeFromCart(productId);
-  saveCart();
-  renderCart();
-}
-
-function clearCart(){
-  cart = [];
-  saveCart();
-  renderCart();
-}
-
-document.addEventListener('DOMContentLoaded', async ()=>{
-
-  try{
-    const resp = await fetch('data/products.json');
-    products = await resp.json();
-
-    products = products.map(p => new Product(p.id,p.name,p.price,p.description));
-  }catch(e){
-    products = [
-      new Product('p1','Camiseta Oficial','2499.00','Camiseta del club - simulador'),
-      new Product('p2','Bufanda','799.00','Bufanda tejido oficial'),
-      new Product('p3','Entrada General','1500.00','Entrada simulada para partido')
-    ];
-  }
-
-  loadCart();
-
-
-  renderProducts();
-  renderCart();
-
-
-  document.getElementById('btn-clear').addEventListener('click', clearCart);
-  document.getElementById('btn-checkout').addEventListener('click', ()=>{
-
-    const total = cart.reduce((s,i)=>s + i.subtotal(),0);
-    const count = cart.reduce((s,i)=>s + i.qty,0);
-    const msg = document.createElement('div');
-    msg.className = 'card';
-    msg.innerHTML = `<h3>Resumen de la simulación</h3>
-      <p>Se simuló una compra con <strong>${count}</strong> items por un total de <strong>$${formatMoney(total)}</strong>.</p>
-      <p>Los datos han quedado guardados en localStorage con clave <code>${STORAGE_KEY}</code>.</p>
+  state.products.forEach(p => {
+    const card = document.createElement('article');
+    card.className = 'product';
+    card.innerHTML = `
+      <img src="${p.image}" alt="${p.title}" loading="lazy" />
+      <h3>${p.title}</h3>
+      <div class="desc">${p.description}</div>
+      <div class="price">${formatPrice(p.price)}</div>
+      <div class="actions">
+        <button class="btn add-btn" data-id="${p.id}">Agregar al carrito</button>
+      </div>
     `;
-
-    const aside = document.querySelector('.cart');
-    aside.insertBefore(msg, aside.firstChild);
-
+    container.appendChild(card);
   });
+  bindAddButtons();
+}
 
-  
-  document.getElementById('btn-add-custom')?.addEventListener('click', ()=>{
-    const name = document.getElementById('custom-name').value.trim();
-    const price = Number(document.getElementById('custom-price').value) || 0;
-    if(!name || price <= 0) {
-      const err = document.createElement('div');
-      err.className = 'card';
-      err.innerHTML = '<p style="color:var(--muted)">Ingrese nombre y precio válidos.</p>';
-      const aside = document.querySelector('.cart');
-      aside.insertBefore(err, aside.firstChild);
-      setTimeout(()=>err.remove(), 2500);
+// Event binding for add to cart
+function bindAddButtons() {
+  document.querySelectorAll('.add-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-id');
+      addToCart(Number(id), 1);
+      Swal.fire({icon:'success', title:'Producto agregado', toast:true, position:'top-end', timer:1400, showConfirmButton:false});
+    });
+  });
+}
+
+// Cart logic
+function addToCart(id, qty = 1) {
+  const product = findProduct(id);
+  if (!product) return;
+  const existing = state.cart.find(item => item.id === id);
+  const available = product.stock - (existing ? existing.qty : 0);
+  if (available <= 0) {
+    Swal.fire({icon:'error', title:'Sin stock disponible'});
+    return;
+  }
+  if (existing) existing.qty = Math.min(product.stock, existing.qty + qty);
+  else state.cart.push({id, qty: Math.min(product.stock, qty)});
+  updateCartCount();
+}
+
+function removeFromCart(id) {
+  state.cart = state.cart.filter(i => i.id !== id);
+  renderCart();
+  updateCartCount();
+}
+
+function changeQty(id, newQty) {
+  const product = findProduct(id);
+  if (!product) return;
+  const item = state.cart.find(i => i.id === id);
+  if (!item) return;
+  item.qty = Math.max(1, Math.min(product.stock, Number(newQty)));
+  renderCart();
+  updateCartCount();
+}
+
+function cartTotal() {
+  return state.cart.reduce((sum, it) => {
+    const p = findProduct(it.id);
+    return sum + (p ? p.price * it.qty : 0);
+  }, 0);
+}
+
+function updateCartCount() {
+  const count = state.cart.reduce((s, i) => s + i.qty, 0);
+  document.getElementById('cart-count').textContent = count;
+}
+
+// Render cart modal
+function renderCart() {
+  const modal = document.getElementById('cart-modal');
+  const container = document.getElementById('cart-items');
+  container.innerHTML = '';
+  if (state.cart.length === 0) {
+    container.innerHTML = '<div class="note">Carrito vacío</div>';
+  } else {
+    state.cart.forEach(item => {
+      const p = findProduct(item.id);
+      const div = document.createElement('div');
+      div.className = 'cart-item';
+      div.innerHTML = `
+        <img src="${p.image}" alt="${p.title}" />
+        <div class="meta">
+          <strong>${p.title}</strong><div class="desc">${formatPrice(p.price)} c/u</div>
+          <div class="qty-controls">
+            <button class="btn qty-decrease" data-id="${item.id}">-</button>
+            <input class="qty-input" data-id="${item.id}" value="${item.qty}" size="2" />
+            <button class="btn qty-increase" data-id="${item.id}">+</button>
+            <button class="btn" data-remove="${item.id}">Eliminar</button>
+          </div>
+        </div>
+        <div class="price">${formatPrice(p.price * item.qty)}</div>
+      `;
+      container.appendChild(div);
+    });
+    const summary = document.createElement('div');
+    summary.className = 'note';
+    summary.innerHTML = `<strong>Total: ${formatPrice(cartTotal())}</strong>`;
+    container.appendChild(summary);
+  }
+  modal.classList.remove('hidden');
+  bindCartButtons();
+}
+
+// Bind cart UI controls
+function bindCartButtons() {
+  document.querySelectorAll('[data-remove]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const id = Number(btn.getAttribute('data-remove'));
+      removeFromCart(id);
+    });
+  });
+  document.querySelectorAll('.qty-decrease').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = Number(btn.getAttribute('data-id'));
+      const item = state.cart.find(i => i.id === id);
+      if (item) changeQty(id, Math.max(1, item.qty - 1));
+    });
+  });
+  document.querySelectorAll('.qty-increase').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = Number(btn.getAttribute('data-id'));
+      const item = state.cart.find(i => i.id === id);
+      if (item) changeQty(id, Math.min(999, item.qty + 1));
+    });
+  });
+  document.querySelectorAll('.qty-input').forEach(input => {
+    input.addEventListener('change', () => {
+      const id = Number(input.getAttribute('data-id'));
+      changeQty(id, Number(input.value));
+    });
+  });
+}
+
+// Checkout flow
+function openCheckout() {
+  if (state.cart.length === 0) {
+    Swal.fire({icon:'info', title:'El carrito está vacío'});
+    return;
+  }
+  document.getElementById('cart-modal').classList.add('hidden');
+  document.getElementById('checkout-modal').classList.remove('hidden');
+  // precargar datos en el formulario (sugerido en el enunciado)
+  document.getElementById('fullname').value = 'Juan Pérez';
+  document.getElementById('email').value = 'juan.perez@example.com';
+  document.getElementById('address').value = 'Calle Falsa 123, Ciudad';
+}
+
+// Simulate payment / finalize order
+function finalizeOrder(formData) {
+  const orders = loadOrdersFromLocalStorage();
+  const orderId = 'ORD' + Date.now();
+  const items = state.cart.map(i => ({...i, title: findProduct(i.id).title, price: findProduct(i.id).price}));
+  const order = {
+    id: orderId,
+    buyer: formData,
+    items,
+    total: cartTotal(),
+    createdAt: new Date().toISOString()
+  };
+  orders.push(order);
+  saveOrdersToLocalStorage(orders);
+  // Decrement stock locally (simulate server update)
+  order.items.forEach(it => {
+    const p = findProduct(it.id);
+    if (p) p.stock = Math.max(0, p.stock - it.qty);
+  });
+  // Clear cart
+  state.cart = [];
+  updateCartCount();
+  renderProducts();
+  document.getElementById('checkout-modal').classList.add('hidden');
+  Swal.fire({
+    icon:'success',
+    title:'Compra exitosa',
+    html:`<strong>Pedido:</strong> ${orderId}<br/><strong>Total:</strong> ${formatPrice(order.total)}`
+  });
+}
+
+// Initialization and UI wiring
+function init() {
+  // Buttons
+  document.getElementById('view-cart-btn').addEventListener('click', renderCart);
+  document.getElementById('continue-shopping').addEventListener('click', () => {
+    document.getElementById('cart-modal').classList.add('hidden');
+  });
+  document.getElementById('checkout-btn').addEventListener('click', openCheckout);
+  document.getElementById('back-to-cart').addEventListener('click', () => {
+    document.getElementById('checkout-modal').classList.add('hidden');
+    document.getElementById('cart-modal').classList.remove('hidden');
+  });
+  document.getElementById('checkout-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const data = {
+      fullname: form.fullname.value.trim(),
+      email: form.email.value.trim(),
+      address: form.address.value.trim(),
+      payment: form.payment.value
+    };
+    // Simple validation
+    if (!data.fullname || !data.email) {
+      Swal.fire({icon:'error', title:'Complete los campos requeridos'});
       return;
     }
-    const id = 'p' + (products.length + 1);
-    const p = new Product(id,name,price,'Producto agregado por usuario');
-    products.push(p);
-    renderProducts();
+    // Simulate payment confirmation
+    Swal.fire({
+      title: 'Confirmar pago',
+      html: `Total a pagar: <strong>${formatPrice(cartTotal())}</strong>`,
+      showCancelButton: true,
+      confirmButtonText: 'Pagar ahora'
+    }).then(result => {
+      if (result.isConfirmed) {
+        finalizeOrder(data);
+      }
+    });
   });
-});
+
+  // Load data
+  loadProducts();
+}
+
+// Start app
+document.addEventListener('DOMContentLoaded', init);
